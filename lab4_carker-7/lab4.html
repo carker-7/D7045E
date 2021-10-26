@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
+    <title>Laboration 4</title>
+
+    <script id="vertex-shader" type="x-shader/x-vertex">
+    precision mediump float;
+
+    attribute vec4 vPosition;
+    attribute vec4 vNormal;
+    varying vec3 N, worldPos;
+    uniform mat4 tMatrix;
+    uniform mat4 vMatrix;
+    uniform mat4 pMatrix;
+    uniform mat3 nMatrix;
+
+    void main()
+    {
+      vec3 worldPos = (tMatrix * vPosition).xyz;
+      N = normalize(mat3(tMatrix)*vNormal.xyz);
+      gl_Position = pMatrix * vMatrix * tMatrix * vPosition;
+    }
+
+    /*attribute vec4 vPosition;
+    attribute vec4 vNormal;
+    varying vec3 N, L, E;
+    uniform mat4 tMatrix;
+    uniform mat4 vMatrix;
+    uniform mat4 pMatrix;
+    uniform mat3 nMatrix;
+    uniform vec4 lightPosition;
+
+    void main()
+    {
+        vec3 pos = (vMatrix * vPosition).xyz;
+
+        // check for directional light
+
+        /*if(lightPosition.w == 0.0)  {
+          L = normalize(lightPosition.xyz);
+        } else {
+          L = normalize( lightPosition.xyz - pos );
+        }*/
+        /*L = -normalize(vec3(0,-1, -1));
+
+        E =  -normalize(pos);
+        N = normalize( nMatrix*vNormal.xyz);
+
+        gl_Position = pMatrix * vMatrix * tMatrix * vPosition;
+
+    }*/
+
+    </script>
+
+    <script id="fragment-shader" type="x-shader/x-fragment">
+    precision mediump float;
+
+    uniform vec4 ambientProduct;
+    uniform vec4 diffuseProduct;
+    uniform vec4 specularProduct;
+    uniform float shininess;
+    uniform vec4 lightPosition;
+    uniform mat4 vMatrix;
+    uniform mat4 vMatrixInv;
+    uniform float floorFlag;
+
+    varying vec3 N, worldPos;
+
+    void main() {
+
+      vec3 L = normalize(lightPosition.xyz);
+      //vec3 L = normalize(vec3(1,5, 1));
+      //vec3 L = normalize(lightPosition.xyz)
+      vec3 E = normalize(vMatrixInv[3].xyz - worldPos);
+
+      vec4 fColor;
+      vec3 H = normalize(L + E);
+      vec4 ambient = ambientProduct;
+
+      float Kd = max(dot(L, N), 0.0);
+      vec4  diffuse = Kd*diffuseProduct;
+
+      float Ks = pow(max(dot(N, H), 0.0), shininess);
+      vec4  specular = Ks * specularProduct;
+
+      if(dot(L, N) < 0.0) {
+        specular = vec4(0.0, 0.0, 0.0, 1.0);
+      }
+
+      /*if(floorFlag == 1.0) {
+        float KdFloor = max(dot(L, N), 1.0);
+        vec4  diffuseFloor = KdFloor*diffuseProduct;
+        fColor = ambient + diffuseFloor + specular;
+        fColor.a = 1.0;
+        gl_FragColor = fColor;
+      } else if (floorFlag == 0.0){
+        fColor = ambient + diffuse + specular;
+        fColor.a = 1.0;
+        gl_FragColor = fColor;
+      }*/
+
+      fColor = ambient + diffuse + specular;
+      fColor.a = 1.0;
+      gl_FragColor = fColor;
+    }
+
+
+    /*precision mediump float;
+
+    uniform vec4 ambientProduct;
+    uniform vec4 diffuseProduct;
+    uniform vec4 specularProduct;
+    uniform float shininess;
+    uniform float floorFlag;
+    varying vec3 N, L, E;
+    uniform mat4 vMatrixInv;
+
+    void main()
+    {
+        vec4 fColor;
+
+        vec3 H = normalize( L + E );
+        vec4 ambient = ambientProduct;
+
+        float Kd = max( dot(L, N), 0.0 );
+        vec4  diffuse = Kd*diffuseProduct;
+
+        float Ks = pow( max(dot(N, H), 0.0), shininess );
+        vec4  specular = Ks * specularProduct;
+
+        if( dot(L, N) < 0.0 ) {
+          specular = vec4(0.0, 0.0, 0.0, 1.0);
+        }
+
+        if(floorFlag == 1.0) {
+          float KdFloor = max(dot(L, N), 1.1);
+          vec4  diffuseFloor = KdFloor*diffuseProduct;
+
+          fColor = ambient + diffuseFloor + specular;
+          fColor.a = 1.0;
+          gl_FragColor = fColor;
+        } else if (floorFlag == 0.0){
+          fColor = ambient + diffuse + specular;
+          fColor.a = 1.0;
+          gl_FragColor = fColor;
+        }
+    }*/
+
+    </script>
+
+    <script type="text/javascript" src="webgl-utils.js"></script>
+    <script type="text/javascript" src="MV.js"></script>
+    <script type="text/javascript" src="meshCube.js"></script>
+    <script type="text/javascript" src="meshSphere.js"></script>
+    <script type="text/javascript" src="meshCylinder.js"></script>
+    <script type="text/javascript" src="meshCone.js"></script>
+    <script type="text/javascript" src="meshFloor.js"></script>
+    <script type="text/javascript" src="shader.js"></script>
+    <script type="text/javascript" src="shaderProgram.js"></script>
+    <script type="text/javascript" src="material.js"></script>
+    <script type="text/javascript" src="ADSMaterial.js"></script>
+    <script type="text/javascript" src="floorMaterial.js"></script>
+    <script type="text/javascript" src="node.js"></script>
+    <script type="text/javascript" src="lightSource.js"></script>
+    <script type="text/javascript" src="camera.js"></script>
+    <script type="text/javascript" src="lab4.js"></script>
+    <script type="text/javascript" src="innerNode.js"></script>
+    <script type="text/javascript" src="geometryNode.js"></script>
+    <script type="text/javascript" src="lab4.js"></script>
+</head>
+<body>
+    <center><canvas id="gl-canvas" width="1700px" height="900px">
+        Oops ... your browser doesn't support the HTML5 canvas element
+    </canvas>  </center>
+    <br />
+    <center>Rotate left : <input id = "greenCube" type = "button" value = "green cube">
+      <input id = "pinkCylinder" type = "button" value = "pink cylinder">
+    Rotate Right: <input id = "greenCube1" type = "button" value = "green cube">
+      <input id = "pinkCylinder1" type = "button" value = "pink cylinder"></center>
+</body>
+</html>
